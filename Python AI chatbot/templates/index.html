@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SmartAI – Intelligent AI Chatbot</title>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Highlight.js for Syntax Highlighting -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme">
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <!-- App Container -->
+  <div class="app-layout">
+    
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+      
+      <!-- Sidebar Header / Logo -->
+      <div class="sidebar-header">
+        <div class="brand">
+          <div class="brand-icon">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+          </div>
+          <div class="brand-info">
+            <span class="brand-name">SmartAI</span>
+            <span class="brand-tag">v2.0 Intelligent</span>
+          </div>
+        </div>
+        <button class="icon-btn sidebar-close-btn" id="sidebarCloseBtn" title="Close Sidebar">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- New Chat Button -->
+      <div class="sidebar-action-wrap">
+        <button class="btn btn-primary new-chat-btn" id="newChatBtn">
+          <i class="fa-solid fa-plus"></i>
+          <span>New Chat</span>
+          <kbd class="shortcut-badge">Ctrl+K</kbd>
+        </button>
+      </div>
+
+      <!-- Search Conversations -->
+      <div class="search-wrap">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" id="searchInput" class="search-input" placeholder="Search conversations..." autocomplete="off">
+        <button class="clear-search-btn hidden" id="clearSearchBtn" title="Clear Search">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Chat History Section -->
+      <div class="chat-history-container">
+        <div class="history-label-row">
+          <span class="history-label">Recent Conversations</span>
+          <span class="chat-count-badge" id="chatCountBadge">0</span>
+        </div>
+        
+        <!-- Chat History List -->
+        <ul class="chat-list" id="chatList">
+          <!-- Dynamically populated via JS -->
+          <li class="loading-chats-state">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+            <span>Loading history...</span>
+          </li>
+        </ul>
+
+        <!-- Empty History State -->
+        <div class="empty-history hidden" id="emptyHistory">
+          <i class="fa-regular fa-comments"></i>
+          <p>No conversations yet</p>
+          <small>Start a new chat to see history</small>
+        </div>
+      </div>
+
+      <!-- Sidebar Footer Controls -->
+      <div class="sidebar-footer">
+        
+        <!-- Live AI / Demo Status Pill -->
+        <div class="api-status-badge demo" id="apiStatusBadge" title="Click to view API status">
+          <span class="status-dot"></span>
+          <span class="status-text" id="statusBadgeText">Checking...</span>
+          <i class="fa-solid fa-circle-info status-info-icon"></i>
+        </div>
+
+        <!-- Mode Toggle & Settings Row -->
+        <div class="footer-btn-grid">
+          <button class="footer-action-btn" id="themeToggleBtn" title="Toggle Dark/Light Mode">
+            <i class="fa-solid fa-moon" id="themeIcon"></i>
+            <span id="themeText">Theme</span>
+          </button>
+          
+          <button class="footer-action-btn" id="openSettingsBtn" title="Open Settings">
+            <i class="fa-solid fa-gear"></i>
+            <span>Settings</span>
+          </button>
+        </div>
+
+        <!-- Clear Chat History Button -->
+        <button class="footer-action-btn clear-history-btn" id="clearAllChatsBtn" title="Clear All History">
+          <i class="fa-solid fa-trash-can"></i>
+          <span>Clear All Chats</span>
+        </button>
+
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- Top Navbar -->
+      <header class="top-navbar">
+        <div class="navbar-left">
+          <button class="icon-btn" id="sidebarToggleBtn" title="Toggle Sidebar">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="active-chat-indicator">
+            <h2 class="active-chat-title" id="activeChatTitle">New Chat</h2>
+          </div>
+        </div>
+
+        <div class="navbar-right">
+          <!-- Model Selector Pill -->
+          <div class="model-badge" id="navbarModelBadge" title="Current Active AI Model">
+            <i class="fa-solid fa-microchip"></i>
+            <span class="model-name" id="navbarModelName">Gemini 2.0 Flash</span>
+          </div>
+
+          <button class="icon-btn mobile-new-btn" id="mobileNewChatBtn" title="New Chat">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Chat Messages Container -->
+      <div class="messages-viewport" id="messagesViewport">
+        
+        <!-- Welcome Screen (Shown when no messages in chat) -->
+        <div class="welcome-screen" id="welcomeScreen">
+          <div class="welcome-badge">
+            <i class="fa-solid fa-sparkles"></i> Next-Gen AI Assistant
+          </div>
+          <h1 class="welcome-heading">Hello! How can I help you today?</h1>
+          <p class="welcome-description">
+            SmartAI is your intelligent conversational partner powered by state-of-the-art language models. 
+            Ask technical questions, generate clean code, write emails, or brainstorm creative ideas.
+          </p>
+
+          <!-- Demo Mode Alert Banner -->
+          <div class="demo-mode-alert hidden" id="demoModeAlert">
+            <div class="alert-icon"><i class="fa-solid fa-circle-exclamation"></i></div>
+            <div class="alert-content">
+              <strong>Demo Mode Active:</strong> No OpenRouter API key is configured. 
+              SmartAI will provide sample guided responses.
+              <a href="javascript:void(0)" id="demoAlertSettingsLink">Configure API Key</a> in Settings for live AI answers.
+            </div>
+          </div>
+
+          <!-- Suggested Prompt Cards Grid -->
+          <div class="prompt-cards-grid">
+            
+            <div class="prompt-card" data-prompt="What are decorators in Python and how do they work with practical examples?">
+              <div class="card-header">
+                <span class="card-icon" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">
+                  <i class="fa-brands fa-python"></i>
+                </span>
+                <span class="card-tag">Programming</span>
+              </div>
+              <h3 class="card-title">Explain Python Programming</h3>
+              <p class="card-desc">"What are decorators in Python and how do they work with practical examples?"</p>
+              <div class="card-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            </div>
+
+            <div class="prompt-card" data-prompt="Draft a polite and professional follow-up email after a job interview for a Senior Developer position.">
+              <div class="card-header">
+                <span class="card-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
+                  <i class="fa-regular fa-envelope"></i>
+                </span>
+                <span class="card-tag">Writing</span>
+              </div>
+              <h3 class="card-title">Write a Professional Email</h3>
+              <p class="card-desc">"Draft a polite and professional follow-up email after a job interview."</p>
+              <div class="card-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            </div>
+
+            <div class="prompt-card" data-prompt="Brainstorm 5 innovative startup ideas at the intersection of AI and sustainable technology.">
+              <div class="card-header">
+                <span class="card-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">
+                  <i class="fa-solid fa-lightbulb"></i>
+                </span>
+                <span class="card-tag">Ideation</span>
+              </div>
+              <h3 class="card-title">Generate Creative Ideas</h3>
+              <p class="card-desc">"Brainstorm 5 innovative startup ideas in sustainable technology."</p>
+              <div class="card-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            </div>
+
+            <div class="prompt-card" data-prompt="Explain async/await vs Promises in JavaScript with a clear, step-by-step example.">
+              <div class="card-header">
+                <span class="card-icon" style="background: rgba(236, 72, 153, 0.15); color: #ec4899;">
+                  <i class="fa-brands fa-js"></i>
+                </span>
+                <span class="card-tag">Education</span>
+              </div>
+              <h3 class="card-title">Help Me Learn JavaScript</h3>
+              <p class="card-desc">"Explain async/await vs Promises with a clear practical example."</p>
+              <div class="card-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Messages Stream -->
+        <div class="messages-stream hidden" id="messagesStream">
+          <!-- Dynamically populated with chat bubbles -->
+        </div>
+
+        <!-- Thinking / Loading Indicator -->
+        <div class="thinking-row hidden" id="thinkingIndicator">
+          <div class="avatar ai-avatar">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+          </div>
+          <div class="thinking-content">
+            <div class="thinking-bubble">
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+            </div>
+            <span class="thinking-text" id="thinkingStatusText">SmartAI is generating a response...</span>
+          </div>
+        </div>
+
+        <!-- Scroll to bottom button -->
+        <button class="scroll-bottom-btn hidden" id="scrollBottomBtn" title="Scroll to latest message">
+          <i class="fa-solid fa-arrow-down"></i>
+        </button>
+
+      </div>
+
+      <!-- Chat Input Area -->
+      <footer class="chat-input-area">
+        <div class="input-box-wrapper">
+          
+          <!-- Context/Demo notice inside input bar if active -->
+          <div class="input-top-bar" id="inputTopBar">
+            <span class="context-pill"><i class="fa-solid fa-clock-rotate-left"></i> Multi-turn Context Active</span>
+            <span class="demo-pill hidden" id="inputDemoPill"><i class="fa-solid fa-flask"></i> Demo Mode</span>
+          </div>
+
+          <!-- Main Input Field Container -->
+          <div class="input-field-container">
+            <textarea 
+              id="messageInput" 
+              class="message-textarea" 
+              placeholder="Message SmartAI... (Enter to send, Shift+Enter for new line)" 
+              rows="1"
+              autofocus></textarea>
+
+            <div class="input-actions-right">
+              <button class="icon-btn clear-text-btn hidden" id="clearInputBtn" title="Clear input">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+              
+              <button class="send-btn" id="sendBtn" title="Send message (Enter)" disabled>
+                <i class="fa-solid fa-arrow-up"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Bottom Footer Disclaimer -->
+          <div class="input-disclaimer">
+            <span>SmartAI can make mistakes. Consider checking important information. Powered by OpenRouter.</span>
+          </div>
+
+        </div>
+      </footer>
+
+    </main>
+
+  </div>
+
+  <!-- ==========================================
+       MODALS
+       ========================================== -->
+
+  <!-- Settings Modal -->
+  <div class="modal-backdrop hidden" id="settingsModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon"><i class="fa-solid fa-gear"></i></div>
+          <h3 class="modal-title">Settings</h3>
+        </div>
+        <button class="icon-btn modal-close-btn" id="closeSettingsBtn">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        
+        <!-- OpenRouter API Key Section -->
+        <div class="form-group">
+          <div class="form-label-row">
+            <label for="settingsApiKey" class="form-label">OpenRouter API Key</label>
+            <a href="https://openrouter.ai/keys" target="_blank" rel="noopener" class="help-link">
+              Get Free Key <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </a>
+          </div>
+          <div class="api-key-input-wrap">
+            <input type="password" id="settingsApiKey" class="form-input" placeholder="sk-or-v1-..." autocomplete="off">
+            <button type="button" class="icon-btn toggle-password-btn" id="toggleApiKeyVisBtn" title="Show/Hide Key">
+              <i class="fa-regular fa-eye"></i>
+            </button>
+          </div>
+          <div class="api-key-status-row">
+            <span class="key-status-text" id="keyStatusText">No key configured (Running in Demo Mode)</span>
+            <button type="button" class="btn btn-sm btn-outline" id="testConnectionBtn">
+              <i class="fa-solid fa-plug"></i> Test Connection
+            </button>
+          </div>
+        </div>
+
+        <!-- AI Model Selection -->
+        <div class="form-group">
+          <label for="settingsModelSelect" class="form-label">AI Model</label>
+          <select id="settingsModelSelect" class="form-select">
+            <option value="google/gemini-2.5-flash">Google: Gemini 2.5 Flash (Recommended)</option>
+            <option value="deepseek/deepseek-chat">DeepSeek: DeepSeek V3 (Chat)</option>
+            <option value="meta-llama/llama-3.3-70b-instruct">Meta: Llama 3.3 70B Instruct</option>
+            <option value="openai/gpt-4o-mini">OpenAI: GPT-4o Mini</option>
+            <option value="anthropic/claude-3.5-haiku">Anthropic: Claude 3.5 Haiku</option>
+            <option value="mistralai/mistral-small-24b-instruct-2501">Mistral: Small 24B Instruct</option>
+            <option value="custom">-- Custom OpenRouter Model ID --</option>
+          </select>
+
+          <!-- Custom Model ID Field (Shown when custom selected) -->
+          <div class="custom-model-wrap hidden" id="customModelWrap">
+            <input type="text" id="settingsCustomModel" class="form-input" placeholder="e.g. meta-llama/llama-3.1-8b-instruct">
+          </div>
+          <small class="form-help">Select your preferred AI model available on OpenRouter.</small>
+        </div>
+
+        <!-- Theme Selection -->
+        <div class="form-group">
+          <label class="form-label">Theme Appearance</label>
+          <div class="theme-options-grid">
+            <label class="theme-card">
+              <input type="radio" name="themeRadio" value="dark" checked>
+              <div class="theme-card-content">
+                <i class="fa-solid fa-moon"></i>
+                <span>Dark Mode</span>
+              </div>
+            </label>
+            <label class="theme-card">
+              <input type="radio" name="themeRadio" value="light">
+              <div class="theme-card-content">
+                <i class="fa-solid fa-sun"></i>
+                <span>Light Mode</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- System Prompt Customization -->
+        <div class="form-group">
+          <label for="settingsSystemPrompt" class="form-label">System Instructions (Personality)</label>
+          <textarea id="settingsSystemPrompt" class="form-textarea" rows="3" placeholder="Define how SmartAI should behave..."></textarea>
+          <small class="form-help">Custom instructions passed with every request.</small>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelSettingsBtn">Cancel</button>
+        <button type="button" class="btn btn-primary" id="saveSettingsBtn">
+          <i class="fa-solid fa-floppy-disk"></i> Save Settings
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rename Conversation Modal -->
+  <div class="modal-backdrop hidden" id="renameModal">
+    <div class="modal-dialog modal-dialog-sm">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon"><i class="fa-solid fa-pen"></i></div>
+          <h3 class="modal-title">Rename Conversation</h3>
+        </div>
+        <button class="icon-btn modal-close-btn" id="closeRenameModalBtn">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="renameTitleInput" class="form-label">New Title</label>
+          <input type="text" id="renameTitleInput" class="form-input" maxlength="60" placeholder="Enter new chat title">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelRenameBtn">Cancel</button>
+        <button type="button" class="btn btn-primary" id="saveRenameBtn">Save Title</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clear All Confirmation Modal -->
+  <div class="modal-backdrop hidden" id="clearConfirmModal">
+    <div class="modal-dialog modal-dialog-sm">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon danger"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <h3 class="modal-title">Clear All History?</h3>
+        </div>
+        <button class="icon-btn modal-close-btn" id="closeClearConfirmBtn">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>This action will permanently delete all your conversation history and messages stored in the database. This cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelClearBtn">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmClearAllBtn">
+          <i class="fa-solid fa-trash-can"></i> Yes, Delete Everything
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Markdown & Code Highlighting Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+  <!-- Application Script -->
+  <script src="/static/js/script.js"></script>
+</body>
+</html>
